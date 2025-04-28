@@ -45,25 +45,47 @@ export function RegisterForm({ className, ...props }) {
       return;
     }
     
+    // Password strength validation (optional)
+    if (password.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
+    
     setLoading(true);
     
     try {
+      // Call the register method from ApiService
+      // This matches your backend API endpoint expectations
       const data = await ApiService.register(username, email, password);
       
       toast.success('Registration successful!');
       
-      // Automatically log in after successful registration
-      if (data.token && data.userId) {
-        const userData = { id: data.userId, username };
+      // Check if the API returns token and userId for auto-login
+      if (data && data.token && data.userId) {
+        // Create a user object with the returned data
+        const userData = { 
+          id: data.userId, 
+          username: username,
+          email: email,
+          // Add any other user data returned from the API
+          ...(data.userData || {})
+        };
+        
+        // Call the login function from AuthContext to store the token and user data
         login(data.token, userData);
         navigate('/dashboard');
       } else {
-        // Redirect to login page if no auto-login
+        // If auto-login data is not provided, redirect to login page
         toast.info('Please log in with your new account');
         navigate('/login');
       }
     } catch (error) {
-      toast.error(error.message || 'Registration failed');
+      // Handle specific error cases from the API if needed
+      if (error.message?.includes('already exists')) {
+        toast.error('Username or email is already taken. Please try another.');
+      } else {
+        toast.error(error.message || 'Registration failed. Please try again.');
+      }
       console.error('Registration error:', error);
     } finally {
       setLoading(false);

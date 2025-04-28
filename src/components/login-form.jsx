@@ -34,18 +34,31 @@ export function LoginForm({ className, ...props }) {
     setLoading(true);
     
     try {
+      // Call the login method from ApiService
       const data = await ApiService.login(username, password);
       
-      if (data.token && data.userId) {
-        const userData = { id: data.userId, username };
+      // Check if the response contains token and userId
+      if (data && data.token && data.userId) {
+        // Create a user object with the returned data
+        const userData = { 
+          id: data.userId, 
+          username: username,
+          // Add any other user data returned from the API
+          ...(data.userData || {})
+        };
+        
+        // Call the login function from AuthContext to store the token and user data
         login(data.token, userData);
+        
         toast.success('Login successful!');
-        navigate('/dashboard');
+        navigate('/dashboard'); // Navigate to dashboard after successful login
       } else {
-        toast.error('Invalid login response');
+        toast.error('Invalid login response from server');
+        console.error('Login response missing required fields:', data);
       }
     } catch (error) {
-      toast.error(error.message || 'Login failed');
+      // Display the error message from the API if available
+      toast.error(error.message || 'Login failed. Please check your credentials.');
       console.error('Login error:', error);
     } finally {
       setLoading(false);
@@ -69,7 +82,7 @@ export function LoginForm({ className, ...props }) {
                 <Input 
                   id="username" 
                   type="text" 
-                  placeholder="yourusername" 
+                  placeholder="Enter your username" 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required 
