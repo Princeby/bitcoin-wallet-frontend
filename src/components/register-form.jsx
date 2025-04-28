@@ -73,7 +73,7 @@ export function RegisterForm({ className, ...props }) {
         
         // Call the login function from AuthContext to store the token and user data
         login(data.token, userData);
-        navigate('/dashboard');
+        navigate('/login');
       } else {
         // If auto-login data is not provided, redirect to login page
         toast.info('Please log in with your new account');

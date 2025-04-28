@@ -37,14 +37,15 @@ export function LoginForm({ className, ...props }) {
       // Call the login method from ApiService
       const data = await ApiService.login(username, password);
       
-      // Check if the response contains token and userId
-      if (data && data.token && data.userId) {
-        // Create a user object with the returned data
-        const userData = { 
-          id: data.userId, 
-          username: username,
-          // Add any other user data returned from the API
-          ...(data.userData || {})
+      // Check if the response contains token and user data
+      if (data && data.token && data.user && data.user.id) {
+        // Use the user object structure from the API response
+        const userData = {
+          id: data.user.id,
+          username: data.user.username,
+          email: data.user.email,
+          // Spread any other fields that might be in the user object
+          ...data.user
         };
         
         // Call the login function from AuthContext to store the token and user data

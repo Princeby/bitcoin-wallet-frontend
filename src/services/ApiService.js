@@ -46,20 +46,29 @@ class ApiService {
     }
   
     // Authentication
+    // Updated login method for ApiService.js
     async login(username, password) {
-      const response = await fetch(`${this.baseUrl}/auth/login`, {
+        const response = await fetch(`${this.baseUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
+        });
+        
+        const data = await response.json();
+        
+        // Check if response is not ok
+        if (!response.ok) {
+        // Handle error response
         throw new Error(data.message || 'Login failed');
-      }
-      
-      return data;
+        }
+        
+        // At this point, data should be valid
+        // Store token in localStorage for subsequent requests
+        if (data.token) {
+        localStorage.setItem('token', data.token);
+        }
+        
+        return data;
     }
   
     async register(username, email, password) {

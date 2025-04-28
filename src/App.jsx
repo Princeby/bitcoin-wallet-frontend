@@ -8,6 +8,7 @@ import { AuthProvider } from './context/AuthProvider';
 import AuthContext from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -45,11 +46,7 @@ function App() {
               path="/dashboard" 
               element={
                 <ProtectedRoute>
-                  {/* Dashboard component will go here */}
-                  <div className="p-8 text-center">
-                    <h1 className="text-2xl font-bold">Welcome to your Bitcoin Wallet Dashboard</h1>
-                    <p className="mt-4">Your wallet dashboard is under construction</p>
-                  </div>
+                  <Dashboard />
                 </ProtectedRoute>
               } 
             />
