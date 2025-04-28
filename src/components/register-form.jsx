@@ -15,9 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function LoginForm({ className, ...props }) {
+export function RegisterForm({ className, ...props }) {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -26,27 +28,43 @@ export function LoginForm({ className, ...props }) {
     e.preventDefault();
     
     // Validation
-    if (!username || !password) {
+    if (!username || !email || !password || !confirmPassword) {
       toast.error('Please fill in all fields');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
       return;
     }
     
     setLoading(true);
     
     try {
-      const data = await ApiService.login(username, password);
+      const data = await ApiService.register(username, email, password);
       
+      toast.success('Registration successful!');
+      
+      // Automatically log in after successful registration
       if (data.token && data.userId) {
         const userData = { id: data.userId, username };
         login(data.token, userData);
-        toast.success('Login successful!');
         navigate('/dashboard');
       } else {
-        toast.error('Invalid login response');
+        // Redirect to login page if no auto-login
+        toast.info('Please log in with your new account');
+        navigate('/login');
       }
     } catch (error) {
-      toast.error(error.message || 'Login failed');
-      console.error('Login error:', error);
+      toast.error(error.message || 'Registration failed');
+      console.error('Registration error:', error);
     } finally {
       setLoading(false);
     }
@@ -56,9 +74,9 @@ export function LoginForm({ className, ...props }) {
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your wallet</CardTitle>
+          <CardTitle>Create an Account</CardTitle>
           <CardDescription>
-            Enter your credentials below to login to your account
+            Sign up to create your Bitcoin wallet
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -69,31 +87,44 @@ export function LoginForm({ className, ...props }) {
                 <Input 
                   id="username" 
                   type="text" 
-                  placeholder="yourusername" 
+                  placeholder="Choose a username" 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required 
                 />
               </div>
               <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    to="/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="your.email@example.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required 
+                />
+              </div>
+              <div className="grid gap-3">
+                <Label htmlFor="password">Password</Label>
                 <Input 
                   id="password" 
-                  type="password" 
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required 
                 />
               </div>
-              <div className="flex flex-col gap-3">
+              <div className="grid gap-3">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input 
+                  id="confirmPassword" 
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required 
+                />
+              </div>
+              <div className="flex flex-col gap-3 pt-2">
                 <Button 
                   type="submit" 
                   className="w-full"
@@ -105,16 +136,16 @@ export function LoginForm({ className, ...props }) {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Logging in...
+                      Registering...
                     </>
-                  ) : 'Login'}
+                  ) : 'Sign up'}
                 </Button>
               </div>
             </div>
             <div className="mt-4 text-center text-sm">
-              Don't have an account?{" "}
-              <Link to="/register" className="underline underline-offset-4">
-                Sign up
+              Already have an account?{" "}
+              <Link to="/login" className="underline underline-offset-4">
+                Log in
               </Link>
             </div>
           </form>
