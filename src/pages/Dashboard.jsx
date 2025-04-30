@@ -23,6 +23,7 @@ import ApiService from '@/services/ApiService';
 import { toast } from 'react-toastify';
 import { MarketData } from '@/components/Market-data';
 import { SendBitcoinModal } from '@/components/send-bitcoin-modal';
+import { BitcoinQRCodeModal } from '@/components/BitcoinQRCodeModal';
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -462,6 +463,14 @@ const Dashboard = () => {
         onClose={() => setShowSendModal(false)}
         walletId={selectedWallet?.id}
         onSuccess={handleTransactionSuccess}
+      />
+
+      {/* Bitcoin QR Code Modal */}
+      <BitcoinQRCodeModal
+        isOpen={showQrModal}
+        address={receiveAddress}
+        walletName={selectedWallet?.name || 'Bitcoin Wallet'}
+        onClose={() => setShowQrModal(false)}
       />
       
       <main className="flex-1 p-4 md:p-6">
