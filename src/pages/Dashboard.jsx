@@ -21,6 +21,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import AuthContext from '@/context/AuthContext';
 import ApiService from '@/services/ApiService';
 import { toast } from 'react-toastify';
+import { MarketData } from '@/components/Market-data';
+import { SendBitcoinModal } from '@/components/send-bitcoin-modal';
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -57,6 +59,10 @@ const Dashboard = () => {
   const [showQrModal, setShowQrModal] = useState(false);
   const [feeEstimates, setFeeEstimates] = useState(null);
   const [transactionDetailsOpen, setTransactionDetailsOpen] = useState({});
+
+  // State for send bitcoin modal
+  const [showSendModal, setShowSendModal] = useState(false);
+
   
   // Simulate or fetch market data - in production you'd get this from an API
   const fetchExternalMarketData = async () => {
@@ -341,6 +347,17 @@ const Dashboard = () => {
     }));
   };
 
+  // Handle successful transaction from send modal
+  const handleTransactionSuccess = (transaction) => {
+    // Close the modal
+    setShowSendModal(false);
+    
+    // Refresh wallet data
+    fetchWalletBalance();
+    fetchTransactions();
+    fetchUtxos();
+  };
+
   const formatBTC = (amount) => {
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 8,
@@ -438,6 +455,14 @@ const Dashboard = () => {
       {showQrModal && (
         <QRCodeModal address={receiveAddress} onClose={() => setShowQrModal(false)} />
       )}
+
+      {/* Send Bitcoin Modal */}
+      <SendBitcoinModal
+        isOpen={showSendModal}
+        onClose={() => setShowSendModal(false)}
+        walletId={selectedWallet?.id}
+        onSuccess={handleTransactionSuccess}
+      />
       
       <main className="flex-1 p-4 md:p-6">
         <div className="container grid gap-6 md:gap-8">
@@ -489,6 +514,7 @@ const Dashboard = () => {
                       className="flex-1" 
                       size="sm" 
                       disabled={!selectedWallet || balance.confirmed <= 0}
+                      onClick={() => setShowSendModal(true)}
                     >
                       <ArrowUpRight className="mr-2 h-4 w-4" />
                       Send
