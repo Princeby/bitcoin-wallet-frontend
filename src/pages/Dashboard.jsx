@@ -467,98 +467,166 @@ const Dashboard = () => {
       <main className="flex-1 p-4 md:p-6">
         <div className="container grid gap-6 md:gap-8">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* Enhanced Balance Card */}
             {/* Balance Card */}
-            <Card className="col-span-2">
+            {/* Balance Card */}
+            <Card className="col-span-2 overflow-hidden border-black/5 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="absolute right-0 top-0 h-16 w-16 translate-x-4 -translate-y-4 transform rounded-full bg-black opacity-5" />
+
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+                <div className="flex items-center gap-2">
+                  <div className="rounded-full bg-black p-1.5">
+                    <Wallet className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 rounded-full"
                   onClick={handleSyncWallet}
                   disabled={syncingWallet || !selectedWallet}
                 >
-                  <RefreshCw className={cn("h-4 w-4", syncingWallet && "animate-spin")} />
+                  <RefreshCw className={cn("h-3.5 w-3.5", syncingWallet && "animate-spin")} />
                 </Button>
               </CardHeader>
+
               <CardContent>
                 {!selectedWallet ? (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground mb-4">No wallet selected</p>
-                    <Button onClick={handleCreateWallet}>
-                      <PlusCircle className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50/50 py-8 dark:border-gray-700 dark:bg-gray-800/20">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                      <PlusCircle className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+                    </div>
+                    <p className="mt-4 text-sm text-muted-foreground">No wallet selected</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCreateWallet}
+                      className="mt-4 border-black/80 bg-white text-black hover:bg-black hover:text-white dark:border-white/80 dark:bg-black dark:text-white dark:hover:bg-white dark:hover:text-black"
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
                       Create Wallet
                     </Button>
                   </div>
                 ) : (
-                  <>
-                    <div className="text-2xl font-bold">
-                      {formatBTC(balance.total)} BTC
-                    </div>
-                    <div className="text-base text-muted-foreground">
-                      {formatUSD(balance.total * marketData.currentPrice)}
-                    </div>
-                    {balance.unconfirmed > 0 && (
-                      <div className="mt-2 flex items-center text-sm text-muted-foreground">
-                        <Clock className="mr-1 h-4 w-4" />
-                        <span>Pending: {formatBTC(balance.unconfirmed)} BTC</span>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Available</span>
+                        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">BTC</span>
                       </div>
-                    )}
-                  </>
+
+                      <div className="flex items-baseline justify-between">
+                        <div className="text-3xl font-bold tracking-tighter">{formatUSD(balance.total * 68423.52)}</div>
+                        <div className="text-xl font-medium">{formatBTC(balance.total)}</div>
+                      </div>
+
+                      {/* Progress bar showing confirmed vs unconfirmed balance */}
+                      {balance.total > 0 && (
+                        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                          <div
+                            className="h-full rounded-full bg-black dark:bg-white"
+                            style={{ width: `${(balance.confirmed / balance.total) * 100}%` }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Balance details */}
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <div>
+                          <span>Confirmed:</span>
+                          <span className="ml-1 font-medium">{formatBTC(balance.confirmed)} BTC</span>
+                        </div>
+                        {balance.unconfirmed > 0 && (
+                          <div className="flex items-center">
+                            <Clock className="mr-1 h-3 w-3" />
+                            <span>Pending:</span>
+                            <span className="ml-1 font-medium">{formatBTC(balance.unconfirmed)} BTC</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </CardContent>
+
               {selectedWallet && (
-                <CardFooter className="px-8">
-                  <div className="flex space-x-4">
-                    <Button 
-                      className="flex-1" 
-                      size="sm" 
+                <CardFooter className="bg-gray-50/50 px-6 py-4 dark:bg-gray-900/10">
+                  <div className="grid w-full grid-cols-2 gap-4">
+                    <Button
+                      size="sm"
                       disabled={!selectedWallet || balance.confirmed <= 0}
                       onClick={() => setShowSendModal(true)}
+                      className="flex items-center justify-center gap-2 border border-black bg-black font-medium text-white shadow-sm hover:bg-black/90 hover:shadow-md hover:text-white dark:border-white dark:bg-white dark:text-black dark:hover:bg-white/90"
                     >
-                      <ArrowUpRight className="mr-2 h-4 w-4" />
-                      Send
+                      <ArrowUpRight className="h-4 w-4" />
+                      <span>Send</span>
                     </Button>
-                    <Button 
-                      className="flex-1" 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       disabled={!selectedWallet}
                       onClick={() => setShowQrModal(true)}
+                      className="flex items-center justify-center gap-2 border border-black bg-white font-medium text-black shadow-sm hover:bg-black/5 hover:shadow-md dark:border-white dark:bg-black dark:text-white dark:hover:bg-white/5"
                     >
-                      <ArrowDownLeft className="mr-2 h-4 w-4" />
-                      Receive
+                      <ArrowDownLeft className="h-4 w-4" />
+                      <span>Receive</span>
                     </Button>
                   </div>
                 </CardFooter>
               )}
             </Card>
+
             
             {/* Market Info Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Bitcoin Price
+                  Bitcoin Market
                 </CardTitle>
                 <LineChart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 {loading.market ? (
-                  <div className="h-14 flex items-center justify-center">
+                  <div className="h-24 flex items-center justify-center">
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   </div>
                 ) : (
-                  <>
-                    <div className="text-2xl font-bold">{formatUSD(marketData.currentPrice)}</div>
-                    <div className={cn(
-                      "flex items-center text-xs",
-                      marketData.priceChange24h >= 0 ? "text-green-500" : "text-red-500"
-                    )}>
-                      {marketData.priceChange24h >= 0 ? "+" : ""}
-                      {marketData.priceChange24h}%
-                      <span className="ml-1 text-muted-foreground">(24h)</span>
+                  <div className="space-y-3">
+                    {/* Price with change indicator */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Price</span>
+                      <div className="text-right">
+                        <div className="text-xl font-bold">{formatUSD(68423.52)}</div>
+                        <div className={cn(
+                          "flex items-center justify-end text-xs",
+                          2.34 >= 0 ? "text-green-500" : "text-red-500"
+                        )}>
+                          {2.34 >= 0 ? "+" : ""}
+                          {2.34}%
+                          <span className="ml-1 text-muted-foreground">(24h)</span>
+                        </div>
+                      </div>
                     </div>
-                  </>
+                    
+                    {/* Divider */}
+                    <div className="h-px bg-border" />
+                    
+                    {/* Trading volume with 24h change */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">24h Volume</span>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">$42.1B</div>
+                        <div className="text-xs text-green-500">+8.7%</div>
+                      </div>
+                    </div>
+                    
+                    {/* Market dominance */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">BTC Dominance</span>
+                      <div className="text-sm font-medium">53.2%</div>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -602,6 +670,9 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+           {/* Market Data */}
+           <MarketData />
           
           {/* Transaction History */}
           <div>
@@ -743,59 +814,6 @@ const Dashboard = () => {
             </Card>
           </div>
           
-          {/* Market Stats */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Market Cap</CardTitle>
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading.market ? (
-                  <div className="h-8 flex items-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
-                ) : (
-                  <div className="text-2xl font-bold">${marketData.marketCap}</div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">24h Volume</CardTitle>
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading.market ? (
-                  <div className="h-8 flex items-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
-                ) : (
-                  <div className="text-2xl font-bold">${marketData.volume24h}</div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">All Time High</CardTitle>
-                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                {loading.market ? (
-                  <div className="h-8 flex items-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-2xl font-bold">{formatUSD(marketData.athPrice)}</div>
-                    <p className="text-xs text-muted-foreground">
-                      on {new Date(marketData.athDate).toLocaleDateString()}
-                    </p>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
           
           {/* UTXO Overview */}
           {selectedWallet && (

@@ -4,7 +4,7 @@ import { RefreshCw, BarChart3, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import ApiService from '@/services/ApiService';
 import { toast } from 'react-toastify';
 
@@ -54,7 +54,17 @@ export function MarketData() {
       
       // Use our ApiService method
       const historyData = await ApiService.getBitcoinPriceHistory(days);
-      setPriceHistory(historyData);
+      
+      // Filter data points to reduce x-axis density
+      // More sparse for longer timeframes, less sparse for shorter
+      const sparseData = historyData.filter((_, index) => {
+        if (days === 1) return index % 6 === 0; // Every 6th point for 1D
+        if (days === 7) return index % 12 === 0; // Every 12th point for 1W
+        if (days === 30) return index % 24 === 0; // Every 24th point for 1M
+        return index % 48 === 0; // Every 48th point for 3M+
+      });
+      
+      setPriceHistory(sparseData);
       setChartTimeframe(days);
     } catch (error) {
       console.error('Error fetching price history:', error);
@@ -70,6 +80,22 @@ export function MarketData() {
       style: 'currency',
       currency: 'USD'
     }).format(amount);
+  };
+
+  // Function to format X-axis tick labels based on timeframe
+  const formatXAxisTick = (tick) => {
+    const date = new Date(tick);
+    
+    if (chartTimeframe === 1) {
+      // For 1 day, show hours
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (chartTimeframe <= 7) {
+      // For week, show day and month
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    } else {
+      // For longer periods, show month only
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
   };
 
   return (
@@ -158,13 +184,17 @@ export function MarketData() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={priceHistory}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                <LineChart data={priceHistory} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+                  {/* Removed CartesianGrid entirely */}
                   <XAxis 
-                    dataKey="date" 
-                    tickFormatter={(tick) => tick.slice(0, 5)} 
+                    dataKey="timestamp" 
+                    tickFormatter={formatXAxisTick} 
                     stroke="#6b7280" 
                     fontSize={10}
+                    tick={{ fill: "#6b7280" }}
+                    axisLine={{ stroke: "#374151", strokeWidth: 1 }}
+                    tickLine={{ stroke: "#374151" }}
+                    minTickGap={30} // Increased minimum gap between ticks
                   />
                   <YAxis 
                     domain={['auto', 'auto']} 
@@ -172,10 +202,12 @@ export function MarketData() {
                     stroke="#6b7280"
                     fontSize={10} 
                     width={60}
+                    axisLine={{ stroke: "#374151", strokeWidth: 1 }}
+                    tickLine={{ stroke: "#374151" }}
                   />
                   <Tooltip 
                     formatter={(value) => [`$${value.toLocaleString()}`, 'Price']}
-                    labelFormatter={(label) => `Date: ${label}`}
+                    labelFormatter={(label) => new Date(label).toLocaleString()}
                     contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: '0.375rem' }}
                     itemStyle={{ color: '#e5e7eb' }}
                     labelStyle={{ color: '#9ca3af' }}
@@ -183,10 +215,10 @@ export function MarketData() {
                   <Line 
                     type="monotone" 
                     dataKey="price" 
-                    stroke="#3b82f6" 
+                    stroke="#000000" // Changed to black
                     strokeWidth={2} 
                     dot={false} 
-                    activeDot={{ r: 4 }} 
+                    activeDot={{ r: 4, fill: "#000000", stroke: "#fff" }} 
                   />
                 </LineChart>
               </ResponsiveContainer>
