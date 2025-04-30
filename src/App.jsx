@@ -8,7 +8,7 @@ import { AuthProvider } from './context/AuthProvider';
 import AuthContext from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard3';
+import Dashboard from './pages/Dashboard';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
